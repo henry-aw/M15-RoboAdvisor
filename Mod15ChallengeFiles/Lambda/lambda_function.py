@@ -124,7 +124,82 @@ def recommend_portfolio(intent_request):
     risk_level = get_slots(intent_request)["riskLevel"]
     source = intent_request["invocationSource"]
 
-    # YOUR CODE GOES HERE!
+if source == "DialogCodeHook":
+        # Perform basic validation on the supplied input slots.
+        # Use the elicitSlot dialog action to re-prompt
+        # for the first violation detected.
+        slots = get_slots(intent_request)
+        validation_result = validate_data(age, investment_amount, intent_request)
+        if not validation_result["isValid"]:
+            slots[validation_result["violatedSlot"]] = None  # Cleans invalid slot
+            # Returns an elicitSlot dialog to request new data for the invalid slot
+            return elicit_slot(
+                intent_request["sessionAttributes"],
+                intent_request["currentIntent"]["name"],
+                slots,
+                validation_result["violatedSlot"],
+                validation_result["message"],
+            )
+        # Fetch current session attributes
+        output_session_attributes = intent_request["sessionAttributes"]
+        return delegate(output_session_attributes, get_slots(intent_request))
+    
+    recommendation = get_recommendation(risk_level)
+    
+    return close(
+        intent_request["sessionAttributes"],
+        "Fulfilled",
+        {
+            "contentType": "PlainText",
+            "content": """{} thank you for your information;
+            based on the risk level you defined, my recommendation is to choose an investment portfolio with {}
+            """.format(
+                first_name, recommendation
+            ),
+        }
+        )
+    
+
+def validate_data(age, investment_amount, intent_request):
+    # Validate that the user's age is greater than 0 and less than 65
+    if age is not None:
+        age = parse_int(age)
+        if age<=0 or age>65:
+            return build_validation_result(
+                False,
+                "age",
+                "You should be between 0 and 65 years old to use this service, "
+                "please provide a different age.",
+            )
+    
+    # Validate that the user's investment amount is 
+    # greater than or equal to 5000
+    if investment_amount is not None:
+        investment_amount = parse_int(
+            investment_amount
+        )
+        if investment_amount < 5000:
+            return build_validation_result(
+                False,
+                "investment_amount",
+                "The investment amount should be more than $5,000, "
+                "please provide an amount that satisfies that requirement.",
+            )
+    
+    # A True results is returned if age and investment_amount are valid
+    return build_validation_result(True, None, None)
+    
+def get_recommendation(risk_level):
+    recommendation = ""
+    if risk_level == "None":
+        recommendation = "100% bonds (AGG), 0% equities (SPY)"
+    elif risk_level == "Low":
+        recommendation = "60% bonds (AGG), 40% equities (SPY)"
+    elif risk_level == "Medium":
+        recommendation = "40% bonds (AGG), 60% equities (SPY)"
+    elif risk_level == "High":
+        recommendation = "20% bonds (AGG), 80% equities (SPY)"
+    return recommendation
 
 
 ### Intents Dispatcher ###
