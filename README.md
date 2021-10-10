@@ -30,10 +30,5 @@ https://user-images.githubusercontent.com/86025349/136702992-8378bd42-78de-4a9d-
 
 ## Technologies & Usage
 This project leverages Python 3.7 and Amazon Web Services (AWS), specifically Amazon Lex and Amazon Lambda, with the following requirements and dependencies:
-- import pandas as pd
-- from pathlib import Path
-- import tensorflow as tf
-- from tensorflow.keras.layers import Dense
-- from tensorflow.keras.models import Sequential
-- from sklearn.model_selection import train_test_split
-- from sklearn.preprocessing import StandardScaler,OneHotEncoder
+- from datetime import datetime
+- from dateutil.relativedelta import relativedelta
